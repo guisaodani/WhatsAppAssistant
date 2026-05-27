@@ -11,6 +11,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
+    <PackageReference Include="Swashbuckle.AspNetCore.ApiTesting" Version="10.1.7" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\WhatsAppAssistant.Application\WhatsAppAssistant.Application.csproj" />
     <ProjectReference Include="..\WhatsAppAssistant.Infrastructure\WhatsAppAssistant.Infrastructure.csproj" />
   </ItemGroup>
