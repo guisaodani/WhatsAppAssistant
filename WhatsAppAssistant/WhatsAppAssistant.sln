@@ -1,0 +1,60 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35931.197
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{6866E8D6-AFF7-465E-833E-77063B12E330}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WhatsAppAssistant.Core", "WhatsAppAssistant.Core\WhatsAppAssistant.Core.csproj", "{A90325A0-966D-40A5-88B9-7263AA4E3C6C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WhatsAppAssistant.Application", "WhatsAppAssistant.Application\WhatsAppAssistant.Application.csproj", "{905BC691-33E0-4C52-BC9F-5F0EF0EACC96}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WhatsAppAssistant.Infrastructure", "WhatsAppAssistant.Infrastructure\WhatsAppAssistant.Infrastructure.csproj", "{A75335A7-81F6-4B86-ADB4-6FECFBB155AA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WhatsAppAssistant.Api", "WhatsAppAssistant.Api\WhatsAppAssistant.Api.csproj", "{8B999D16-8EDA-48C6-A463-C134A953556A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WhatsAppAssistant.Tests", "WhatsAppAssistant.Tests\WhatsAppAssistant.Tests.csproj", "{AF41A3C6-8F74-4376-B929-8B29B5A2EAA4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A90325A0-966D-40A5-88B9-7263AA4E3C6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A90325A0-966D-40A5-88B9-7263AA4E3C6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A90325A0-966D-40A5-88B9-7263AA4E3C6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A90325A0-966D-40A5-88B9-7263AA4E3C6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{905BC691-33E0-4C52-BC9F-5F0EF0EACC96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{905BC691-33E0-4C52-BC9F-5F0EF0EACC96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{905BC691-33E0-4C52-BC9F-5F0EF0EACC96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{905BC691-33E0-4C52-BC9F-5F0EF0EACC96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A75335A7-81F6-4B86-ADB4-6FECFBB155AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A75335A7-81F6-4B86-ADB4-6FECFBB155AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A75335A7-81F6-4B86-ADB4-6FECFBB155AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A75335A7-81F6-4B86-ADB4-6FECFBB155AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B999D16-8EDA-48C6-A463-C134A953556A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B999D16-8EDA-48C6-A463-C134A953556A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B999D16-8EDA-48C6-A463-C134A953556A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B999D16-8EDA-48C6-A463-C134A953556A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF41A3C6-8F74-4376-B929-8B29B5A2EAA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF41A3C6-8F74-4376-B929-8B29B5A2EAA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF41A3C6-8F74-4376-B929-8B29B5A2EAA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF41A3C6-8F74-4376-B929-8B29B5A2EAA4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A90325A0-966D-40A5-88B9-7263AA4E3C6C} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{905BC691-33E0-4C52-BC9F-5F0EF0EACC96} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{A75335A7-81F6-4B86-ADB4-6FECFBB155AA} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{8B999D16-8EDA-48C6-A463-C134A953556A} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{AF41A3C6-8F74-4376-B929-8B29B5A2EAA4} = {6866E8D6-AFF7-465E-833E-77063B12E330}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B5E0989E-7ABA-439B-AA92-D61281F0FDBC}
+	EndGlobalSection
+EndGlobal
