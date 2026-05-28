@@ -9,12 +9,19 @@ namespace WhatsAppAssistant.Application.Services
 {
     public class MessageService : IMessageService
     {
+        private readonly IAssistantService _aiService;
+
+        public MessageService(IAssistantService aiService)
+        {
+            _aiService = aiService;
+        }
+
         public async Task<string> ProcessMessageAsync(string from, string message)
         {
             // Por ahora retornamos un eco para verificar que el webhook funciona
             // Aquí irá la lógica de IA, calendario, etc.
 
-            return await Task.FromResult($"Hola! Recibi tu mensaje: {message}");
+            return await _aiService.GetResponseAsync(message);
         }
     }
 }
