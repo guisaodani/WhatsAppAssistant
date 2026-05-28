@@ -18,7 +18,7 @@ namespace WhatsAppAssistant.Application.Services
 
         public async Task<string> ProcessMessageAsync(string from, string message)
         {
-            // Aquí irá la lógica de IA, calendario, etc.
+            // Aquí irá la lógica de IA, calendario.
 
             return await _aiService.GetResponseAsync(message);
         }
