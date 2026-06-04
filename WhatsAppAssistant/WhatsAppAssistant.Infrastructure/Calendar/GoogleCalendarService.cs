@@ -71,6 +71,7 @@ public class GoogleCalendarService : ICalendarService
         var request = service.Events.Insert(evento, "primary");
         var resultado = await request.ExecuteAsync();
 
+        Console.WriteLine($"Evento ID: {resultado.Id} - Status: {resultado.Status}");
         return $"Evento creado: {resultado.Summary} el {start:dddd dd 'de' MMMM 'a las' HH:mm}";
     }
 

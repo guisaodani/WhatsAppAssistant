@@ -17,59 +17,62 @@ public class AssistantService : IAssistantService
         _usuarioRepository = usuarioRepository;
         _chatHistory = new ChatHistory();
 
-        _chatHistory.AddSystemMessage("""
-            Eres un asistente personal inteligente que ayuda a gestionar
-            el calendario, correos y tareas. Respondes siempre en español,
-            de forma concisa y amigable.
+        var fechaActual = DateTime.Now.ToString("dddd, dd 'de' MMMM 'de' yyyy");
+        var horaActual = DateTime.Now.ToString("HH:mm");
 
-            Cuando el usuario quiera crear un evento, extrae titulo, fecha y hora.
-            Cuando el usuario quiera ver sus eventos, indícalo.
-
-            Si necesitas crear o consultar eventos responde EXACTAMENTE en JSON:
-            {"accion": "crear_evento", "titulo": "...", "inicio": "2026-06-03T15:00:00", "fin": "2026-06-03T16:00:00"}
-            {"accion": "ver_eventos"}
-            {"accion": "solicitar_autorizacion"}
-            """);
+        _chatHistory.AddSystemMessage(
+            $"Eres un asistente personal inteligente que ayuda a gestionar el calendario, correos y tareas. Respondes siempre en español, de forma concisa y amigable.\n\n" +
+            $"Hoy es: {fechaActual} hora actual: {horaActual} (Colombia UTC-5)\n\n" +
+            "Cuando el usuario quiera crear un evento en el calendario responde UNICAMENTE con este JSON sin ningun texto adicional:\n" +
+            "{\"accion\":\"crear_evento\",\"titulo\":\"TITULO\",\"inicio\":\"YYYY-MM-DDTHH:MM:00\",\"fin\":\"YYYY-MM-DDTHH:MM:00\"}\n\n" +
+            "Cuando el usuario quiera ver sus eventos responde UNICAMENTE con este JSON:\n" +
+            "{\"accion\":\"ver_eventos\"}\n\n" +
+            "No agregues explicaciones, solo el JSON puro cuando sea una accion de calendario.\n" +
+            "Para cualquier otra consulta responde normalmente en español."
+        );
     }
 
     public async Task<string> GetResponseAsync(string userMessage, string numeroWhatsapp)
     {
         _chatHistory.AddUserMessage(userMessage);
-
         var response = await _chatCompletion.GetChatMessageContentAsync(_chatHistory);
         var reply = response.Content ?? "No pude procesar tu mensaje.";
 
-        if (reply.TrimStart().StartsWith("{"))
+        var jsonStart = reply.IndexOf('{');
+        var jsonEnd = reply.LastIndexOf('}');
+
+        if (jsonStart >= 0 && jsonEnd > jsonStart)
         {
+            var jsonStr = reply.Substring(jsonStart, jsonEnd - jsonStart + 1);
             try
             {
-                var json = System.Text.Json.JsonDocument.Parse(reply);
+                var json = System.Text.Json.JsonDocument.Parse(jsonStr);
                 var accion = json.RootElement.GetProperty("accion").GetString();
 
-                if (accion == "solicitar_autorizacion" || accion == "crear_evento" || accion == "ver_eventos")
-                {
-                    var token = await _usuarioRepository.GetGoogleTokenAsync(numeroWhatsapp);
-                    var refreshToken = await _usuarioRepository.GetGoogleRefreshTokenAsync(numeroWhatsapp);
+                var token = await _usuarioRepository.GetGoogleTokenAsync(numeroWhatsapp);
+                var refreshToken = await _usuarioRepository.GetGoogleRefreshTokenAsync(numeroWhatsapp);
 
-                    if (string.IsNullOrEmpty(token))
-                    {
-                        reply = $"Para gestionar tu calendario necesitas autorizar el acceso. Entra a este link:\nhttps://shifting-pancake-superjet.ngrok-free.dev/api/Auth/google?numero={numeroWhatsapp}";
-                    }
-                    else if (accion == "crear_evento")
-                    {
-                        var titulo = json.RootElement.GetProperty("titulo").GetString() ?? "Evento";
-                        var inicio = json.RootElement.GetProperty("inicio").GetDateTime();
-                        var fin = json.RootElement.GetProperty("fin").GetDateTime();
-                        reply = await _calendarService.CreateEventForUserAsync(token, refreshToken!, titulo, inicio, fin);
-                    }
-                    else if (accion == "ver_eventos")
-                    {
-                        var eventos = await _calendarService.GetUpcomingEventsForUserAsync(token, refreshToken!);
-                        reply = "Tus proximos eventos:\n" + string.Join("\n", eventos);
-                    }
+                if (string.IsNullOrEmpty(token))
+                {
+                    reply = $"Para gestionar tu calendario necesitas autorizar el acceso primero. Entra aqui:\nhttps://shifting-pancake-superjet.ngrok-free.dev/api/Auth/google?numero={Uri.EscapeDataString(numeroWhatsapp)}";
+                }
+                else if (accion == "crear_evento")
+                {
+                    var titulo = json.RootElement.GetProperty("titulo").GetString() ?? "Evento";
+                    var inicio = json.RootElement.GetProperty("inicio").GetDateTime();
+                    var fin = json.RootElement.GetProperty("fin").GetDateTime();
+                    reply = await _calendarService.CreateEventForUserAsync(token, refreshToken!, titulo, inicio, fin);
+                }
+                else if (accion == "ver_eventos")
+                {
+                    var eventos = await _calendarService.GetUpcomingEventsForUserAsync(token, refreshToken!);
+                    reply = "Tus proximos eventos:\n" + string.Join("\n", eventos);
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                reply = $"Error: {ex.Message} - JSON: {jsonStr}";
+            }
         }
 
         _chatHistory.AddAssistantMessage(reply);

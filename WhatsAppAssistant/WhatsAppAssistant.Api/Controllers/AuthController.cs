@@ -24,16 +24,16 @@ public class AuthController : ControllerBase
         var clientId = _configuration["Google:ClientId"] ?? "";
         var redirectUri = _configuration["Google:RedirectUri"] ?? "";
 
-        var flow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
-        {
-            ClientSecrets = new ClientSecrets { ClientId = clientId, ClientSecret = _configuration["Google:ClientSecret"] ?? "" },
-            Scopes = new[] { "https://www.googleapis.com/auth/calendar" }
-        });
+        var url = "https://accounts.google.com/o/oauth2/v2/auth" +
+                  $"?client_id={clientId}" +
+                  $"&redirect_uri={Uri.EscapeDataString(redirectUri)}" +
+                  "&response_type=code" +
+                  "&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar" +
+                  "&access_type=offline" +
+                  "&prompt=consent" +
+                  $"&state={Uri.EscapeDataString(numero)}";
 
-        var authUrl = flow.CreateAuthorizationCodeRequest(redirectUri);
-        authUrl.State = numero;
-
-        return Redirect(authUrl.Build().ToString());
+        return Redirect(url);
     }
 
     [HttpGet("callback")]
