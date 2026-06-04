@@ -6,6 +6,7 @@ using WhatsAppAssistant.Infrastructure.Calendar;
 using WhatsAppAssistant.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
+//
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
