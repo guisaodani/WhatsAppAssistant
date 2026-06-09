@@ -19,7 +19,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WhatsAppAssistant.Tests", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{20D2F46C-4E6E-4830-A627-A07537C1400C}"
 	ProjectSection(SolutionItems) = preProject
-		..\..\..\Users\juang\Downloads\WhatsAppAssistant-Documentacion.docx = ..\..\..\Users\juang\Downloads\WhatsAppAssistant-Documentacion.docx
+		..\..\..\Users\juang\Downloads\WhatsAppAssistant-Documentacion-v3.docx = ..\..\..\Users\juang\Downloads\WhatsAppAssistant-Documentacion-v3.docx
 	EndProjectSection
 EndProject
 Global
