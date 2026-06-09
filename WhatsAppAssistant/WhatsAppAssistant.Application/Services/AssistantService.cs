@@ -21,14 +21,20 @@ public class AssistantService : IAssistantService
         var horaActual = DateTime.Now.ToString("HH:mm");
 
         _chatHistory.AddSystemMessage(
-            $"Eres un asistente personal inteligente que ayuda a gestionar el calendario, correos y tareas. Respondes siempre en español, de forma concisa y amigable.\n\n" +
+            $"Eres un asistente personal inteligente que ayuda a gestionar " +
+            $"el calendario, correos y tareas. Respondes siempre en espanol, " +
+            $"de forma concisa y amigable.\n\n" +
             $"Hoy es: {fechaActual} hora actual: {horaActual} (Colombia UTC-5)\n\n" +
-            "Cuando el usuario quiera crear un evento en el calendario responde UNICAMENTE con este JSON sin ningun texto adicional:\n" +
+            "Cuando el usuario quiera crear un evento responde UNICAMENTE con este JSON:\n" +
             "{\"accion\":\"crear_evento\",\"titulo\":\"TITULO\",\"inicio\":\"YYYY-MM-DDTHH:MM:00\",\"fin\":\"YYYY-MM-DDTHH:MM:00\"}\n\n" +
-            "Cuando el usuario quiera ver sus eventos responde UNICAMENTE con este JSON:\n" +
+            "Cuando el usuario quiera ver sus eventos responde UNICAMENTE con:\n" +
             "{\"accion\":\"ver_eventos\"}\n\n" +
-            "No agregues explicaciones, solo el JSON puro cuando sea una accion de calendario.\n" +
-            "Para cualquier otra consulta responde normalmente en español."
+            "Cuando el usuario quiera eliminar un evento responde UNICAMENTE con:\n" +
+            "{\"accion\":\"listar_para_eliminar\"}\n\n" +
+            "Cuando el usuario diga cual evento eliminar por numero (ej: 'elimina el 1', 'el 2', 'el primero') " +
+            "responde UNICAMENTE con este JSON donde numero es el numero entero del evento:\n" +
+            "{\"accion\":\"eliminar_evento\",\"numero\":1}\n\n" +
+            "No agregues explicaciones al JSON. Para otras consultas responde normalmente."
         );
     }
 
@@ -67,6 +73,51 @@ public class AssistantService : IAssistantService
                 {
                     var eventos = await _calendarService.GetUpcomingEventsForUserAsync(token, refreshToken!);
                     reply = "Tus proximos eventos:\n" + string.Join("\n", eventos);
+                }
+                else if (accion == "listar_para_eliminar")
+                {
+                    var eventos = await _calendarService.GetUpcomingEventsWithIdAsync(token, refreshToken!);
+                    if (eventos.Count == 0 || eventos[0].StartsWith("No tienes"))
+                        reply = "No tienes eventos proximos para eliminar.";
+                    else
+                    {
+                        // Guardar la lista en el historial para que Groq la recuerde
+                        var listaTexto = "Estos son tus eventos para eliminar:\n" + string.Join("\n", eventos);
+                        _chatHistory.AddAssistantMessage(listaTexto);
+                        reply = listaTexto + "\n\nResponde con el numero del evento que deseas eliminar.";
+                        // Retornar directamente sin pasar por AddAssistantMessage de nuevo
+                        return reply;
+                    }
+                }
+                else if (accion == "eliminar_evento")
+                {
+                    // Ignorar el eventId que manda Groq (puede estar desactualizado)
+                    // Siempre consultar la lista en tiempo real y eliminar por posicion
+                    var eventos = await _calendarService.GetUpcomingEventsWithIdAsync(token, refreshToken!);
+
+                    // Intentar obtener el numero de posicion del JSON
+                    int posicion = 1;
+                    try
+                    {
+                        if (json.RootElement.TryGetProperty("numero", out var numProp))
+                            posicion = numProp.GetInt32();
+                        else if (json.RootElement.TryGetProperty("eventId", out var idProp))
+                            int.TryParse(idProp.GetString(), out posicion);
+                    }
+                    catch { }
+
+                    if (posicion < 1 || posicion > eventos.Count)
+                    {
+                        reply = "Numero invalido. Escribe 'quiero eliminar un evento' para ver la lista actualizada.";
+                    }
+                    else
+                    {
+                        var lineaEvento = eventos[posicion - 1];
+                        var idStart = lineaEvento.IndexOf("[ID:") + 4;
+                        var idEnd = lineaEvento.IndexOf("]", idStart);
+                        var idReal = lineaEvento.Substring(idStart, idEnd - idStart);
+                        reply = await _calendarService.DeleteEventAsync(token, refreshToken!, idReal);
+                    }
                 }
             }
             catch (Exception ex)

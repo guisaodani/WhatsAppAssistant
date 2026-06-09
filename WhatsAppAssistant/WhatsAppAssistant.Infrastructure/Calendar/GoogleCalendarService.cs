@@ -103,4 +103,42 @@ public class GoogleCalendarService : ICalendarService
 
         return lista;
     }
+
+    public async Task<List<string>> GetUpcomingEventsWithIdAsync(
+    string accessToken, string refreshToken, int maxResults = 5)
+    {
+        var service = GetCalendarService(accessToken, refreshToken);
+        var request = service.Events.List("primary");
+        request.TimeMinDateTimeOffset = DateTimeOffset.UtcNow;
+        request.ShowDeleted = false;
+        request.SingleEvents = true;
+        request.MaxResults = maxResults;
+        request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
+
+        var events = await request.ExecuteAsync();
+        var lista = new List<string>();
+
+        if (events.Items == null || !events.Items.Any())
+        {
+            lista.Add("No tienes eventos proximos.");
+            return lista;
+        }
+
+        int i = 1;
+        foreach (var e in events.Items)
+        {
+            var fecha = e.Start.DateTimeDateTimeOffset ?? DateTimeOffset.Parse(e.Start.Date);
+            lista.Add($"{i}. {e.Summary} el {fecha:dddd dd 'de' MMMM 'a las' HH:mm} [ID:{e.Id}]");
+            i++;
+        }
+
+        return lista;
+    }
+
+    public async Task<string> DeleteEventAsync(string accessToken, string refreshToken, string eventId)
+    {
+        var service = GetCalendarService(accessToken, refreshToken);
+        await service.Events.Delete("primary", eventId).ExecuteAsync();
+        return "Evento eliminado correctamente.";
+    }
 }
