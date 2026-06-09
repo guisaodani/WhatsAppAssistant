@@ -141,4 +141,34 @@ public class GoogleCalendarService : ICalendarService
         await service.Events.Delete("primary", eventId).ExecuteAsync();
         return "Evento eliminado correctamente.";
     }
+
+    public async Task<string> UpdateEventAsync(string accessToken, string refreshToken,
+    string eventId, string? newTitle, DateTime? newStart, DateTime? newEnd)
+    {
+        var service = GetCalendarService(accessToken, refreshToken);
+
+        // Obtener el evento actual
+        var evento = await service.Events.Get("primary", eventId).ExecuteAsync();
+
+        // Actualizar solo los campos que se enviaron
+        if (!string.IsNullOrEmpty(newTitle))
+            evento.Summary = newTitle;
+
+        if (newStart.HasValue)
+            evento.Start = new EventDateTime
+            {
+                DateTimeDateTimeOffset = new DateTimeOffset(newStart.Value, TimeSpan.FromHours(-5)),
+                TimeZone = "America/Bogota"
+            };
+
+        if (newEnd.HasValue)
+            evento.End = new EventDateTime
+            {
+                DateTimeDateTimeOffset = new DateTimeOffset(newEnd.Value, TimeSpan.FromHours(-5)),
+                TimeZone = "America/Bogota"
+            };
+
+        var resultado = await service.Events.Update(evento, "primary", eventId).ExecuteAsync();
+        return $"Evento actualizado: {resultado.Summary} el {newStart ?? DateTime.Now:dddd dd 'de' MMMM 'a las' HH:mm}";
+    }
 }

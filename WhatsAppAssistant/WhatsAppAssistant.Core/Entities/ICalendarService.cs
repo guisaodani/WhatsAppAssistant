@@ -13,4 +13,6 @@ public interface ICalendarService
     Task<List<string>> GetUpcomingEventsWithIdAsync(string accessToken, string refreshToken, int maxResults = 5);
 
     Task<string> DeleteEventAsync(string accessToken, string refreshToken, string eventId);
+
+    Task<string> UpdateEventAsync(string accessToken, string refreshToken, string eventId, string? newTitle, DateTime? newStart, DateTime? newEnd);
 }
