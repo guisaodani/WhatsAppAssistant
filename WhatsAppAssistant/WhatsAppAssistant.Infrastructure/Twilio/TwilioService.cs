@@ -15,11 +15,16 @@ public class TwilioService : ITwilioService
     public TwilioService(IOptions settings)
     {
         _settings = settings.Value;
+        Console.WriteLine($"[Twilio] AccountSid vacio: {string.IsNullOrEmpty(_settings.AccountSid)}");
+        Console.WriteLine($"[Twilio] AuthToken vacio: {string.IsNullOrEmpty(_settings.AuthToken)}");
         TwilioClient.Init(_settings.AccountSid, _settings.AuthToken);
     }
 
     public async Task SendMessageAsync(string to, string message)
     {
+        Console.WriteLine($"[Twilio] Enviando a: {to}");
+        Console.WriteLine($"[Twilio] Desde: {_settings.WhatsAppNumber}");
+
         await MessageResource.CreateAsync(
             from: new PhoneNumber(_settings.WhatsAppNumber),
             to: new PhoneNumber(to),

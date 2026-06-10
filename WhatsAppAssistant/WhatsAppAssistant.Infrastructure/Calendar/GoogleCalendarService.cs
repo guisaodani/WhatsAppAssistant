@@ -20,12 +20,14 @@ public class GoogleCalendarService : ICalendarService
         _clientSecret = clientSecret;
     }
 
-    public CalendarService GetCalendarService(string accessToken, string refreshToken)
+    private async Task<CalendarService> GetCalendarServiceAsync(string accessToken, string refreshToken)
     {
         var token = new TokenResponse
         {
             AccessToken = accessToken,
-            RefreshToken = refreshToken
+            RefreshToken = refreshToken,
+            ExpiresInSeconds = 0,
+            IssuedUtc = DateTime.UtcNow.AddHours(-2)
         };
 
         var flow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
@@ -38,6 +40,7 @@ public class GoogleCalendarService : ICalendarService
         });
 
         var credential = new UserCredential(flow, "user", token);
+        await credential.RefreshTokenAsync(CancellationToken.None);
 
         return new CalendarService(new BaseClientService.Initializer
         {
@@ -58,7 +61,7 @@ public class GoogleCalendarService : ICalendarService
 
     public async Task<string> CreateEventForUserAsync(string accessToken, string refreshToken, string title, DateTime start, DateTime end, string? description = null)
     {
-        var service = GetCalendarService(accessToken, refreshToken);
+        var service = await GetCalendarServiceAsync(accessToken, refreshToken);
 
         var evento = new Event
         {
@@ -77,7 +80,7 @@ public class GoogleCalendarService : ICalendarService
 
     public async Task<List<string>> GetUpcomingEventsForUserAsync(string accessToken, string refreshToken, int maxResults = 5)
     {
-        var service = GetCalendarService(accessToken, refreshToken);
+        var service = await GetCalendarServiceAsync(accessToken, refreshToken);
 
         var request = service.Events.List("primary");
         request.TimeMinDateTimeOffset = DateTimeOffset.UtcNow;
@@ -107,7 +110,7 @@ public class GoogleCalendarService : ICalendarService
     public async Task<List<string>> GetUpcomingEventsWithIdAsync(
     string accessToken, string refreshToken, int maxResults = 5)
     {
-        var service = GetCalendarService(accessToken, refreshToken);
+        var service = await GetCalendarServiceAsync(accessToken, refreshToken);
         var request = service.Events.List("primary");
         request.TimeMinDateTimeOffset = DateTimeOffset.UtcNow;
         request.ShowDeleted = false;
@@ -137,7 +140,7 @@ public class GoogleCalendarService : ICalendarService
 
     public async Task<string> DeleteEventAsync(string accessToken, string refreshToken, string eventId)
     {
-        var service = GetCalendarService(accessToken, refreshToken);
+        var service = await GetCalendarServiceAsync(accessToken, refreshToken);
         await service.Events.Delete("primary", eventId).ExecuteAsync();
         return "Evento eliminado correctamente.";
     }
@@ -145,7 +148,7 @@ public class GoogleCalendarService : ICalendarService
     public async Task<string> UpdateEventAsync(string accessToken, string refreshToken,
     string eventId, string? newTitle, DateTime? newStart, DateTime? newEnd)
     {
-        var service = GetCalendarService(accessToken, refreshToken);
+        var service = await GetCalendarServiceAsync(accessToken, refreshToken);
 
         // Obtener el evento actual
         var evento = await service.Events.Get("primary", eventId).ExecuteAsync();
@@ -170,5 +173,35 @@ public class GoogleCalendarService : ICalendarService
 
         var resultado = await service.Events.Update(evento, "primary", eventId).ExecuteAsync();
         return $"Evento actualizado: {resultado.Summary} el {newStart ?? DateTime.Now:dddd dd 'de' MMMM 'a las' HH:mm}";
+    }
+
+    public async Task<List<string>> GetUpcomingEventsForReminderAsync(
+    string accessToken, string refreshToken, int minutosAntes = 30)
+    {
+        var service = await GetCalendarServiceAsync(accessToken, refreshToken);
+        var ahora = DateTimeOffset.UtcNow;
+
+        var request = service.Events.List("primary");
+        request.TimeMinDateTimeOffset = ahora;
+        request.TimeMaxDateTimeOffset = ahora.AddMinutes(minutosAntes + 1);
+        request.ShowDeleted = false;
+        request.SingleEvents = true;
+        request.MaxResults = 10;
+        request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
+
+        var events = await request.ExecuteAsync();
+        var lista = new List<string>();
+
+        if (events.Items == null) return lista;
+
+        foreach (var e in events.Items)
+        {
+            var fecha = e.Start.DateTimeDateTimeOffset ?? DateTimeOffset.Parse(e.Start.Date);
+            var minutosRestantes = (int)(fecha - ahora).TotalMinutes;
+            if (minutosRestantes >= 0 && minutosRestantes <= minutosAntes)
+                lista.Add($"{e.Summary} a las {fecha:HH:mm}");
+        }
+
+        return lista;
     }
 }

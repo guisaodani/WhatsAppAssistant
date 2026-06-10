@@ -9,4 +9,6 @@ public interface IUsuarioRepository
     Task SaveTokensAsync(string numeroWhatsapp, string token, string refreshToken, string email);
 
     Task<bool> UsuarioExisteAsync(string numeroWhatsapp);
+
+    Task<List<Core.Entities.Usuario>> GetAllUsersAsync();
 }

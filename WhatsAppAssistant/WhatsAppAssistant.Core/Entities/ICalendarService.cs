@@ -15,4 +15,6 @@ public interface ICalendarService
     Task<string> DeleteEventAsync(string accessToken, string refreshToken, string eventId);
 
     Task<string> UpdateEventAsync(string accessToken, string refreshToken, string eventId, string? newTitle, DateTime? newStart, DateTime? newEnd);
+
+    Task<List<string>> GetUpcomingEventsForReminderAsync(string accessToken, string refreshToken, int minutosAntes = 30);
 }

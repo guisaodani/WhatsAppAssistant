@@ -54,4 +54,15 @@ public class UsuarioRepository : IUsuarioRepository
             """,
             new { numero = numeroWhatsapp, token, refreshToken, email });
     }
+
+    public async Task<List<Core.Entities.Usuario>> GetAllUsersAsync()
+    {
+        using var conn = GetConnection();
+        var result = await conn.QueryAsync<Core.Entities.Usuario>(
+            "SELECT numero_whatsapp AS NumeroWhatsapp, google_token AS GoogleToken, " +
+            "google_refresh_token AS GoogleRefreshToken, email_google AS EmailGoogle " +
+            "FROM usuarios"
+        );
+        return result.ToList();
+    }
 }

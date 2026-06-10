@@ -4,6 +4,10 @@ using WhatsAppAssistant.Core.Entities;
 using WhatsAppAssistant.Core.Interfaces;
 using WhatsAppAssistant.Infrastructure.Calendar;
 using WhatsAppAssistant.Infrastructure.Persistence;
+using Hangfire;
+using Hangfire.PostgreSql;
+using WhatsAppAssistant.Infrastructure.Reminders;
+using WhatsAppAssistant.Infrastructure.Twilio;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +34,15 @@ kernelBuilder.AddOpenAIChatCompletion(
 var connectionString = builder.Configuration.GetConnectionString("Supabase") ?? "";
 builder.Services.AddScoped<IUsuarioRepository>(_ => new UsuarioRepository(connectionString));
 
+// Hangfire - scheduler de recordatorios
+builder.Services.AddHangfire(config =>
+    config.UsePostgreSqlStorage(connectionString));
+builder.Services.AddHangfireServer();
+builder.Services.AddScoped<IReminderService, ReminderService>();
+// Twilio - primero la configuracion, luego el servicio
+builder.Services.Configure<TwilioSettings>(builder.Configuration.GetSection("Twilio"));
+builder.Services.AddScoped<ITwilioService, TwilioService>();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -40,4 +53,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.MapControllers();
+// Hangfire dashboard (solo en desarrollo)
+app.UseHangfireDashboard("/hangfire");
+
+// Configurar el job recurrente cada 5 minutos
+RecurringJob.AddOrUpdate<IReminderService>(
+    "check-reminders",
+    service => service.CheckAndSendRemindersAsync(),
+    "*/5 * * * *"
+);
 app.Run();
